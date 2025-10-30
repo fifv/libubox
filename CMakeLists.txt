@@ -1,105 +1,103 @@
 cmake_minimum_required(VERSION 3.13)
-INCLUDE(CheckLibraryExists)
-INCLUDE(CheckFunctionExists)
+include(CheckLibraryExists)
+include(CheckFunctionExists)
 
-PROJECT(ubox C)
+project(ubox C)
 
-ADD_DEFINITIONS(-Wall -Werror)
-IF(CMAKE_C_COMPILER_VERSION VERSION_GREATER 6)
-	ADD_DEFINITIONS(-Wextra -Werror=implicit-function-declaration)
-	ADD_DEFINITIONS(-Wformat -Werror=format-security -Werror=format-nonliteral)
-ENDIF()
-ADD_DEFINITIONS(-Os -std=gnu99 -g3 -Wmissing-declarations -Wno-unused-parameter)
+add_definitions(-Wall -Werror)
+if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 6)
+	add_definitions(-Wextra -Werror=implicit-function-declaration)
+	add_definitions(-Wformat -Werror=format-security -Werror=format-nonliteral)
+endif()
+add_definitions(-Os -std=gnu99 -g3 -Wmissing-declarations -Wno-unused-parameter)
 
-OPTION(BUILD_LUA "build Lua plugin" ON)
-OPTION(BUILD_EXAMPLES "build examples" ON)
+option(BUILD_LUA "build Lua plugin" OFF)
+option(BUILD_EXAMPLES "build examples" ON)
 
-INCLUDE(FindPkgConfig)
-PKG_SEARCH_MODULE(JSONC json-c REQUIRED)
-INCLUDE_DIRECTORIES(${JSONC_INCLUDE_DIRS})
+include(FindPkgConfig)
+pkg_search_module(JSONC json-c REQUIRED)
+include_directories(${JSONC_INCLUDE_DIRS})
 
-SET(SOURCES avl.c avl-cmp.c blob.c blobmsg.c uloop.c usock.c ustream.c ustream-fd.c vlist.c utils.c safe_list.c runqueue.c md5.c kvlist.c ulog.c base64.c udebug.c udebug-remote.c)
 
-ADD_LIBRARY(ubox SHARED ${SOURCES})
-ADD_LIBRARY(ubox-static STATIC ${SOURCES})
-SET_TARGET_PROPERTIES(ubox-static PROPERTIES OUTPUT_NAME ubox)
+add_library(ubox avl.c avl-cmp.c blob.c blobmsg.c uloop.c usock.c ustream.c ustream-fd.c vlist.c utils.c safe_list.c runqueue.c md5.c kvlist.c ulog.c base64.c udebug.c udebug-remote.c)
+target_include_directories(ubox PUBLIC ${CMAKE_SOURCE_DIR})
 
-SET(LIBS)
-CHECK_FUNCTION_EXISTS(clock_gettime HAVE_GETTIME)
-CHECK_FUNCTION_EXISTS(shm_open HAVE_SHM)
-IF(NOT HAVE_GETTIME OR NOT HAVE_SHM)
-	CHECK_LIBRARY_EXISTS(rt clock_gettime "" NEED_GETTIME)
-	CHECK_LIBRARY_EXISTS(rt shm_open "" NEED_SHM)
-	IF(NEED_GETTIME OR NEED_SHM)
-		TARGET_LINK_LIBRARIES(ubox rt)
-	ENDIF()
-ENDIF()
+set(LIBS)
+check_function_exists(clock_gettime HAVE_GETTIME)
+check_function_exists(shm_open HAVE_SHM)
+if(NOT HAVE_GETTIME OR NOT HAVE_SHM)
+	check_library_exists(rt clock_gettime "" NEED_GETTIME)
+	check_library_exists(rt shm_open "" NEED_SHM)
+	if(NEED_GETTIME OR NEED_SHM)
+		target_link_libraries(ubox rt)
+	endif()
+endif()
 
-FILE(GLOB headers *.h)
-LIST(FILTER headers EXCLUDE REGEX "-priv.h$" )
-INSTALL(FILES ${headers}
+file(GLOB headers *.h)
+list(FILTER headers EXCLUDE REGEX "-priv.h$" )
+install(FILES ${headers}
 	DESTINATION include/libubox
 )
-INSTALL(TARGETS ubox ubox-static
+install(TARGETS ubox
 	ARCHIVE DESTINATION lib
 	LIBRARY DESTINATION lib
 )
 
-ADD_SUBDIRECTORY(lua)
-ADD_SUBDIRECTORY(examples)
+# add_subdirectory(lua)
+add_subdirectory(examples)
 
-MACRO(ADD_UNIT_TEST_SAN name)
-  ADD_EXECUTABLE(${name}-san ${name}.c)
-  TARGET_COMPILE_OPTIONS(${name}-san PRIVATE -g -fno-omit-frame-pointer -fsanitize=undefined,address,leak -fno-sanitize-recover=all)
-  TARGET_LINK_OPTIONS(${name}-san PRIVATE -fsanitize=undefined,address,leak)
-  TARGET_LINK_LIBRARIES(${name}-san ubox blobmsg_json json_script ${json})
-  TARGET_INCLUDE_DIRECTORIES(${name}-san PRIVATE ${PROJECT_SOURCE_DIR})
-ENDMACRO(ADD_UNIT_TEST_SAN)
+macro(ADD_UNIT_TEST_SAN name)
+  add_executable(${name}-san ${name}.c)
+  target_compile_options(${name}-san PRIVATE -g -fno-omit-frame-pointer -fsanitize=undefined,address,leak -fno-sanitize-recover=all)
+  target_link_options(${name}-san PRIVATE -fsanitize=undefined,address,leak)
+  target_link_libraries(${name}-san ubox blobmsg_json json_script ${json})
+  target_include_directories(${name}-san PRIVATE ${PROJECT_SOURCE_DIR})
+endmacro(ADD_UNIT_TEST_SAN)
 
-IF(UNIT_TESTING)
-  ENABLE_TESTING()
-  ADD_SUBDIRECTORY(tests)
-ENDIF()
+if(UNIT_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 find_library(json NAMES json-c)
-IF(EXISTS ${json})
-	ADD_LIBRARY(blobmsg_json SHARED blobmsg_json.c)
-	TARGET_LINK_LIBRARIES(blobmsg_json ubox ${json})
+if(EXISTS ${json})
+	add_library(blobmsg_json SHARED blobmsg_json.c)
+	target_link_libraries(blobmsg_json ubox ${json})
 
-	ADD_LIBRARY(blobmsg_json-static STATIC blobmsg_json.c)
-	SET_TARGET_PROPERTIES(blobmsg_json-static
+	add_library(blobmsg_json-static STATIC blobmsg_json.c)
+	set_target_properties(blobmsg_json-static
 			      PROPERTIES OUTPUT_NAME blobmsg_json)
 
-	IF(UNIT_TESTING)
-		ADD_UNIT_TEST_SAN(jshn)
-	ENDIF(UNIT_TESTING)
+	if(UNIT_TESTING)
+		add_unit_test_san(jshn)
+	endif(UNIT_TESTING)
 
-	ADD_EXECUTABLE(jshn jshn.c)
-	TARGET_LINK_LIBRARIES(jshn blobmsg_json ${json})
+	add_executable(jshn jshn.c)
+	target_link_libraries(jshn blobmsg_json ${json})
 
-	ADD_LIBRARY(json_script SHARED json_script.c)
-	TARGET_LINK_LIBRARIES(json_script ubox)
+	add_library(json_script SHARED json_script.c)
+	target_link_libraries(json_script ubox)
 
-	INSTALL(TARGETS blobmsg_json blobmsg_json-static jshn json_script
+	install(TARGETS blobmsg_json blobmsg_json-static jshn json_script
 		ARCHIVE DESTINATION lib
 		LIBRARY DESTINATION lib
 		RUNTIME DESTINATION bin
 	)
 
-	FILE(GLOB scripts sh/*.sh)
-	INSTALL(FILES ${scripts}
+	file(GLOB scripts sh/*.sh)
+	install(FILES ${scripts}
 		DESTINATION share/libubox
 	)
 
-ENDIF()
+endif()
 
-IF(ABIVERSION)
-	SET_TARGET_PROPERTIES(ubox PROPERTIES VERSION ${ABIVERSION})
-	SET_TARGET_PROPERTIES(json_script PROPERTIES VERSION ${ABIVERSION})
-	SET_TARGET_PROPERTIES(blobmsg_json PROPERTIES VERSION ${ABIVERSION})
-ENDIF()
+if(ABIVERSION)
+	set_target_properties(ubox PROPERTIES VERSION ${ABIVERSION})
+	set_target_properties(json_script PROPERTIES VERSION ${ABIVERSION})
+	set_target_properties(blobmsg_json PROPERTIES VERSION ${ABIVERSION})
+endif()
 
-ADD_CUSTOM_TARGET(debian
+add_custom_target(debian
 	COMMAND ${CMAKE_COMMAND} -E echo "Generating debian/changelog from git..."
 	COMMAND ${CMAKE_SOURCE_DIR}/debian/generate-changelog.sh
 	COMMAND dpkg-buildpackage -b -uc -us
