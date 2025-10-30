@@ -22,32 +22,27 @@
 #include "udebug.h"
 #include "udebug-proto.h"
 
-#define UDEBUG_TIMEOUT	1000
+#define UDEBUG_TIMEOUT 1000
 
 __hidden int udebug_buf_open(struct udebug_buf *buf, int fd, uint32_t ring_size, uint32_t data_size);
-__hidden struct udebug_client_msg *
-udebug_send_and_wait(struct udebug *ctx, struct udebug_client_msg *msg, int *rfd);
+__hidden struct udebug_client_msg *udebug_send_and_wait(struct udebug *ctx, struct udebug_client_msg *msg, int *rfd);
 
-static inline int32_t u32_sub(uint32_t a, uint32_t b)
-{
-	return a - b;
+static inline int32_t u32_sub(uint32_t a, uint32_t b) {
+    return a - b;
 }
 
-static inline int32_t u32_max(uint32_t a, uint32_t b)
-{
-	return u32_sub(a, b) > 0 ? a : b;
+static inline int32_t u32_max(uint32_t a, uint32_t b) {
+    return u32_sub(a, b) > 0 ? a : b;
 }
 
-static inline void u32_set(void *ptr, uint32_t val)
-{
-	volatile uint32_t *v = ptr;
-	*v = val;
+static inline void u32_set(void *ptr, uint32_t val) {
+    volatile uint32_t *v = ptr;
+    *v = val;
 }
 
-static inline uint32_t u32_get(void *ptr)
-{
-	volatile uint32_t *v = ptr;
-	return *v;
+static inline uint32_t u32_get(void *ptr) {
+    volatile uint32_t *v = ptr;
+    return *v;
 }
 
 #endif

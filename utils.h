@@ -44,16 +44,16 @@ void *__calloc_a(size_t len, ...);
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
-#define __BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+#define __BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2 * !!(condition)]))
 
 #ifdef __OPTIMIZE__
 extern int __BUILD_BUG_ON_CONDITION_FAILED;
-#define BUILD_BUG_ON(condition)					\
-	do {							\
-		__BUILD_BUG_ON(condition);			\
-		if (condition)					\
-			__BUILD_BUG_ON_CONDITION_FAILED = 1;	\
-	} while(0)
+#define BUILD_BUG_ON(condition)                                                                                                  \
+    do {                                                                                                                         \
+        __BUILD_BUG_ON(condition);                                                                                               \
+        if (condition)                                                                                                           \
+            __BUILD_BUG_ON_CONDITION_FAILED = 1;                                                                                 \
+    } while (0)
 #else
 #define BUILD_BUG_ON __BUILD_BUG_ON
 #endif
@@ -62,8 +62,8 @@ extern int __BUILD_BUG_ON_CONDITION_FAILED;
 #define LIBUBOX_COMPAT_CLOCK_GETTIME
 
 #include <mach/clock_types.h>
-#define CLOCK_REALTIME	CALENDAR_CLOCK
-#define CLOCK_MONOTONIC	SYSTEM_CLOCK
+#define CLOCK_REALTIME  CALENDAR_CLOCK
+#define CLOCK_MONOTONIC SYSTEM_CLOCK
 
 int clock_gettime(int type, struct timespec *tv);
 
@@ -98,35 +98,33 @@ int clock_gettime(int type, struct timespec *tv);
 #define __LITTLE_ENDIAN LITTLE_ENDIAN
 #endif
 
-#define __constant_swap16(x) ((uint16_t)(				\
-	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
-	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
+#define __constant_swap16(x) ((uint16_t)((((uint16_t)(x) & (uint16_t)0x00ffU) << 8) | (((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
-#define __constant_swap32(x) ((uint32_t)(				\
-	(((uint32_t)(x) & (uint32_t)0x000000ffUL) << 24) |		\
-	(((uint32_t)(x) & (uint32_t)0x0000ff00UL) <<  8) |		\
-	(((uint32_t)(x) & (uint32_t)0x00ff0000UL) >>  8) |		\
-	(((uint32_t)(x) & (uint32_t)0xff000000UL) >> 24)))
+#define __constant_swap32(x)                                                                                                     \
+    ((uint32_t)((((uint32_t)(x) & (uint32_t)0x000000ffUL) << 24) | (((uint32_t)(x) & (uint32_t)0x0000ff00UL) << 8) |             \
+                (((uint32_t)(x) & (uint32_t)0x00ff0000UL) >> 8) | (((uint32_t)(x) & (uint32_t)0xff000000UL) >> 24)))
 
-#define __constant_swap64(x) ((uint64_t)(				\
-	(((uint64_t)(x) & (uint64_t)0x00000000000000ffULL) << 56) |	\
-	(((uint64_t)(x) & (uint64_t)0x000000000000ff00ULL) << 40) |	\
-	(((uint64_t)(x) & (uint64_t)0x0000000000ff0000ULL) << 24) |	\
-	(((uint64_t)(x) & (uint64_t)0x00000000ff000000ULL) <<  8) |	\
-	(((uint64_t)(x) & (uint64_t)0x000000ff00000000ULL) >>  8) |	\
-	(((uint64_t)(x) & (uint64_t)0x0000ff0000000000ULL) >> 24) |	\
-	(((uint64_t)(x) & (uint64_t)0x00ff000000000000ULL) >> 40) |	\
-	(((uint64_t)(x) & (uint64_t)0xff00000000000000ULL) >> 56)))
+#define __constant_swap64(x)                                                                                                     \
+    ((uint64_t)((((uint64_t)(x) & (uint64_t)0x00000000000000ffULL) << 56) |                                                      \
+                (((uint64_t)(x) & (uint64_t)0x000000000000ff00ULL) << 40) |                                                      \
+                (((uint64_t)(x) & (uint64_t)0x0000000000ff0000ULL) << 24) |                                                      \
+                (((uint64_t)(x) & (uint64_t)0x00000000ff000000ULL) << 8) |                                                       \
+                (((uint64_t)(x) & (uint64_t)0x000000ff00000000ULL) >> 8) |                                                       \
+                (((uint64_t)(x) & (uint64_t)0x0000ff0000000000ULL) >> 24) |                                                      \
+                (((uint64_t)(x) & (uint64_t)0x00ff000000000000ULL) >> 40) |                                                      \
+                (((uint64_t)(x) & (uint64_t)0xff00000000000000ULL) >> 56)))
 
 /*
  * This returns a constant expression while determining if an argument is
  * a constant expression, most importantly without evaluating the argument.
  */
-#define __is_constant(x)						\
-	(sizeof(int) == sizeof(*(1 ? ((void*)((long)(x) * 0l)) : (int*)1)))
+#define __is_constant(x) (sizeof(int) == sizeof(*(1 ? ((void *)((long)(x) * 0l)) : (int *)1)))
 
-#define __eval_once(func, x)						\
-	({ __typeof__(x) __x = x; func(__x); })
+#define __eval_once(func, x)                                                                                                     \
+    ({                                                                                                                           \
+        __typeof__(x) __x = x;                                                                                                   \
+        func(__x);                                                                                                               \
+    })
 
 #ifdef __cplusplus
 /*
@@ -136,9 +134,7 @@ int clock_gettime(int type, struct timespec *tv);
  */
 #define __eval_safe(func, x) __eval_once(func, x)
 #else
-#define __eval_safe(func, x)						\
-	__builtin_choose_expr(__is_constant(x),				\
-			      func(x), __eval_once(func, x))
+#define __eval_safe(func, x) __builtin_choose_expr(__is_constant(x), func(x), __eval_once(func, x))
 #endif
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -159,21 +155,21 @@ int clock_gettime(int type, struct timespec *tv);
 #define const_le32_to_cpu(x) (x)
 #define const_le16_to_cpu(x) (x)
 
-#define cpu_to_be64(x) __eval_safe(__constant_swap64, x)
-#define cpu_to_be32(x) __eval_safe(__constant_swap32, x)
-#define cpu_to_be16(x) __eval_safe(__constant_swap16, x)
+#define cpu_to_be64(x)       __eval_safe(__constant_swap64, x)
+#define cpu_to_be32(x)       __eval_safe(__constant_swap32, x)
+#define cpu_to_be16(x)       __eval_safe(__constant_swap16, x)
 
-#define be64_to_cpu(x) __eval_safe(__constant_swap64, x)
-#define be32_to_cpu(x) __eval_safe(__constant_swap32, x)
-#define be16_to_cpu(x) __eval_safe(__constant_swap16, x)
+#define be64_to_cpu(x)       __eval_safe(__constant_swap64, x)
+#define be32_to_cpu(x)       __eval_safe(__constant_swap32, x)
+#define be16_to_cpu(x)       __eval_safe(__constant_swap16, x)
 
-#define cpu_to_le64(x) (x)
-#define cpu_to_le32(x) (x)
-#define cpu_to_le16(x) (x)
+#define cpu_to_le64(x)       (x)
+#define cpu_to_le32(x)       (x)
+#define cpu_to_le16(x)       (x)
 
-#define le64_to_cpu(x) (x)
-#define le32_to_cpu(x) (x)
-#define le16_to_cpu(x) (x)
+#define le64_to_cpu(x)       (x)
+#define le32_to_cpu(x)       (x)
+#define le16_to_cpu(x)       (x)
 
 #else /* __BYTE_ORDER == __LITTLE_ENDIAN */
 
@@ -193,21 +189,21 @@ int clock_gettime(int type, struct timespec *tv);
 #define const_be32_to_cpu(x) (x)
 #define const_be16_to_cpu(x) (x)
 
-#define cpu_to_le64(x) __eval_safe(__constant_swap64, x)
-#define cpu_to_le32(x) __eval_safe(__constant_swap32, x)
-#define cpu_to_le16(x) __eval_safe(__constant_swap16, x)
+#define cpu_to_le64(x)       __eval_safe(__constant_swap64, x)
+#define cpu_to_le32(x)       __eval_safe(__constant_swap32, x)
+#define cpu_to_le16(x)       __eval_safe(__constant_swap16, x)
 
-#define le64_to_cpu(x) __eval_safe(__constant_swap64, x)
-#define le32_to_cpu(x) __eval_safe(__constant_swap32, x)
-#define le16_to_cpu(x) __eval_safe(__constant_swap16, x)
+#define le64_to_cpu(x)       __eval_safe(__constant_swap64, x)
+#define le32_to_cpu(x)       __eval_safe(__constant_swap32, x)
+#define le16_to_cpu(x)       __eval_safe(__constant_swap16, x)
 
-#define cpu_to_be64(x) (x)
-#define cpu_to_be32(x) (x)
-#define cpu_to_be16(x) (x)
+#define cpu_to_be64(x)       (x)
+#define cpu_to_be32(x)       (x)
+#define cpu_to_be16(x)       (x)
 
-#define be64_to_cpu(x) (x)
-#define be32_to_cpu(x) (x)
-#define be16_to_cpu(x) (x)
+#define be64_to_cpu(x)       (x)
+#define be32_to_cpu(x)       (x)
+#define be16_to_cpu(x)       (x)
 
 #endif
 
@@ -228,39 +224,39 @@ int clock_gettime(int type, struct timespec *tv);
 #endif
 
 #ifndef __has_attribute
-# define __has_attribute(x) 0
+#define __has_attribute(x) 0
 #endif
 
 #ifndef fallthrough
-# if __has_attribute(__fallthrough__)
-#  define fallthrough __attribute__((__fallthrough__))
-# else
-#  define fallthrough do {} while (0)  /* fallthrough */
-# endif
+#if __has_attribute(__fallthrough__)
+#define fallthrough __attribute__((__fallthrough__))
+#else
+#define fallthrough                                                                                                              \
+    do {                                                                                                                         \
+    } while (0) /* fallthrough */
+#endif
 #endif
 
-int b64_encode(const void *src, size_t src_len,
-	       void *dest, size_t dest_len);
+int b64_encode(const void *src, size_t src_len, void *dest, size_t dest_len);
 
 int b64_decode(const void *src, void *dest, size_t dest_len);
 
-#define B64_ENCODE_LEN(_len)	((((_len) + 2) / 3) * 4 + 1)
-#define B64_DECODE_LEN(_len)	(((_len) / 4) * 3 + 1)
+#define B64_ENCODE_LEN(_len) ((((_len) + 2) / 3) * 4 + 1)
+#define B64_DECODE_LEN(_len) (((_len) / 4) * 3 + 1)
 
-static inline unsigned int cbuf_order(unsigned int x)
-{
-	return 32 - __builtin_clz(x - 1);
+static inline unsigned int cbuf_order(unsigned int x) {
+    return 32 - __builtin_clz(x - 1);
 }
 
-static inline unsigned long cbuf_size(int order)
-{
-	unsigned long page_size = sysconf(_SC_PAGESIZE);
-	unsigned long ret = 1ULL << order;
+static inline unsigned long cbuf_size(int order) {
+    unsigned long page_size = sysconf(_SC_PAGESIZE);
+    unsigned long ret = 1ULL << order;
 
-	if (ret < page_size)
-		ret = page_size;
+    if (ret < page_size) {
+        ret = page_size;
+    }
 
-	return ret;
+    return ret;
 }
 
 void *cbuf_alloc(unsigned int order);

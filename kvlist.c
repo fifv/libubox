@@ -24,78 +24,70 @@
 
 #include "kvlist.h"
 
-int kvlist_strlen(struct kvlist *kv, const void *data)
-{
-	return strlen(data) + 1;
+int kvlist_strlen(struct kvlist *kv, const void *data) {
+    return strlen(data) + 1;
 }
 
-int kvlist_blob_len(struct kvlist *kv, const void *data)
-{
-	return blob_pad_len(data);
+int kvlist_blob_len(struct kvlist *kv, const void *data) {
+    return blob_pad_len(data);
 }
 
-void kvlist_init(struct kvlist *kv, int (*get_len)(struct kvlist *kv, const void *data))
-{
-	avl_init(&kv->avl, avl_strcmp, false, NULL);
-	kv->get_len = get_len;
+void kvlist_init(struct kvlist *kv, int (*get_len)(struct kvlist *kv, const void *data)) {
+    avl_init(&kv->avl, avl_strcmp, false, NULL);
+    kv->get_len = get_len;
 }
 
-static struct kvlist_node *__kvlist_get(struct kvlist *kv, const char *name)
-{
-	struct kvlist_node *node;
+static struct kvlist_node *__kvlist_get(struct kvlist *kv, const char *name) {
+    struct kvlist_node *node;
 
-	return avl_find_element(&kv->avl, name, node, avl);
+    return avl_find_element(&kv->avl, name, node, avl);
 }
 
-void *kvlist_get(struct kvlist *kv, const char *name)
-{
-	struct kvlist_node *node;
+void *kvlist_get(struct kvlist *kv, const char *name) {
+    struct kvlist_node *node;
 
-	node = __kvlist_get(kv, name);
-	if (!node)
-		return NULL;
+    node = __kvlist_get(kv, name);
+    if (!node) {
+        return NULL;
+    }
 
-	return node->data;
+    return node->data;
 }
 
-bool kvlist_delete(struct kvlist *kv, const char *name)
-{
-	struct kvlist_node *node;
+bool kvlist_delete(struct kvlist *kv, const char *name) {
+    struct kvlist_node *node;
 
-	node = __kvlist_get(kv, name);
-	if (node) {
-		avl_delete(&kv->avl, &node->avl);
-		free(node);
-	}
+    node = __kvlist_get(kv, name);
+    if (node) {
+        avl_delete(&kv->avl, &node->avl);
+        free(node);
+    }
 
-	return !!node;
+    return !!node;
 }
 
-bool kvlist_set(struct kvlist *kv, const char *name, const void *data)
-{
-	struct kvlist_node *node;
-	char *name_buf;
-	int len = kv->get_len(kv, data);
+bool kvlist_set(struct kvlist *kv, const char *name, const void *data) {
+    struct kvlist_node *node;
+    char *name_buf;
+    int len = kv->get_len(kv, data);
 
-	node = calloc_a(sizeof(struct kvlist_node) + len,
-		&name_buf, strlen(name) + 1);
-	if (!node)
-		return false;
+    node = calloc_a(sizeof(struct kvlist_node) + len, &name_buf, strlen(name) + 1);
+    if (!node) {
+        return false;
+    }
 
-	kvlist_delete(kv, name);
+    kvlist_delete(kv, name);
 
-	memcpy(node->data, data, len);
+    memcpy(node->data, data, len);
 
-	node->avl.key = strcpy(name_buf, name);
-	avl_insert(&kv->avl, &node->avl);
+    node->avl.key = strcpy(name_buf, name);
+    avl_insert(&kv->avl, &node->avl);
 
-	return true;
+    return true;
 }
 
-void kvlist_free(struct kvlist *kv)
-{
-	struct kvlist_node *node, *tmp;
+void kvlist_free(struct kvlist *kv) {
+    struct kvlist_node *node, *tmp;
 
-	avl_remove_all_elements(&kv->avl, node, avl, tmp)
-		free(node);
+    avl_remove_all_elements(&kv->avl, node, avl, tmp) free(node);
 }

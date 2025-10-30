@@ -44,71 +44,66 @@ typedef void (*uloop_process_handler)(struct uloop_process *c, int ret);
 typedef void (*uloop_interval_handler)(struct uloop_interval *t);
 typedef void (*uloop_signal_handler)(struct uloop_signal *s);
 
-#define ULOOP_READ		(1 << 0)
-#define ULOOP_WRITE		(1 << 1)
-#define ULOOP_EDGE_TRIGGER	(1 << 2)
-#define ULOOP_BLOCKING		(1 << 3)
+#define ULOOP_READ           (1 << 0)
+#define ULOOP_WRITE          (1 << 1)
+#define ULOOP_EDGE_TRIGGER   (1 << 2)
+#define ULOOP_BLOCKING       (1 << 3)
 
-#define ULOOP_EVENT_MASK	(ULOOP_READ | ULOOP_WRITE)
+#define ULOOP_EVENT_MASK     (ULOOP_READ | ULOOP_WRITE)
 
 /* internal flags */
-#define ULOOP_EVENT_BUFFERED	(1 << 4)
+#define ULOOP_EVENT_BUFFERED (1 << 4)
 #ifdef USE_KQUEUE
-#define ULOOP_EDGE_DEFER	(1 << 5)
+#define ULOOP_EDGE_DEFER (1 << 5)
 #endif
 
-#define ULOOP_ERROR_CB		(1 << 6)
+#define ULOOP_ERROR_CB (1 << 6)
 
-struct uloop_fd
-{
-	uloop_fd_handler cb;
-	int fd;
-	bool eof;
-	bool error;
-	bool registered;
-	uint8_t flags;
+struct uloop_fd {
+    uloop_fd_handler cb;
+    int fd;
+    bool eof;
+    bool error;
+    bool registered;
+    uint8_t flags;
 };
 
-struct uloop_timeout
-{
-	struct list_head list;
-	bool pending;
+struct uloop_timeout {
+    struct list_head list;
+    bool pending;
 
-	uloop_timeout_handler cb;
-	struct timeval time;
+    uloop_timeout_handler cb;
+    struct timeval time;
 };
 
-struct uloop_process
-{
-	struct list_head list;
-	bool pending;
+struct uloop_process {
+    struct list_head list;
+    bool pending;
 
-	uloop_process_handler cb;
-	pid_t pid;
+    uloop_process_handler cb;
+    pid_t pid;
 };
 
-struct uloop_interval
-{
-	uloop_interval_handler cb;
-	uint64_t expirations;
+struct uloop_interval {
+    uloop_interval_handler cb;
+    uint64_t expirations;
 
-	union {
-		struct uloop_fd ufd;
-		struct {
-			int64_t fired;
-			unsigned int msecs;
-		} time;
-	} priv;
+    union {
+        struct uloop_fd ufd;
+        struct {
+            int64_t fired;
+            unsigned int msecs;
+        } time;
+    } priv;
 };
 
-struct uloop_signal
-{
-	struct list_head list;
-	struct sigaction orig;
-	bool pending;
+struct uloop_signal {
+    struct list_head list;
+    struct sigaction orig;
+    bool pending;
 
-	uloop_signal_handler cb;
-	int signo;
+    uloop_signal_handler cb;
+    int signo;
 };
 
 extern bool uloop_cancelled;
@@ -137,16 +132,14 @@ int uloop_signal_delete(struct uloop_signal *s);
 
 bool uloop_cancelling(void);
 
-static inline void uloop_end(void)
-{
-	uloop_cancelled = true;
+static inline void uloop_end(void) {
+    uloop_cancelled = true;
 }
 
 int uloop_init(void);
 int uloop_run_timeout(int timeout);
-static inline int uloop_run(void)
-{
-	return uloop_run_timeout(-1);
+static inline int uloop_run(void) {
+    return uloop_run_timeout(-1);
 }
 void uloop_done(void);
 
